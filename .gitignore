@@ -3,5 +3,4 @@
 
 /.venv
 /.idea/*
-/preprocessed/
 /.env
