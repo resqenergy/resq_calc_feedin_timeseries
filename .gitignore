@@ -1,0 +1,7 @@
+/data/
+/results/
+
+/.venv
+/.idea/*
+/preprocessed/
+/.env
