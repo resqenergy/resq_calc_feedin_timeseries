@@ -1,6 +1,5 @@
-"""Author: @srhbrnds
-Date: 2026 - 03 - 18
-"""
+#author: @srhbrnds
+
 import pandas as pd
 from pathlib import Path
 
