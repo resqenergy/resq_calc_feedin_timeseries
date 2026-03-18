@@ -1,7 +1,5 @@
-/data/*
-!data/.gitkeep
-/results/*
-!results/.gitkeep
+/data/
+/results/
 
 /.venv
 /.idea/*
