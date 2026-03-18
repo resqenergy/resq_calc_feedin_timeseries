@@ -1,4 +1,4 @@
-"""Author: Dein Name
+"""Author: @srhbrnds
 Date: 2026 - 03 - 18
 """
 import pandas as pd
