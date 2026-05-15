@@ -44,7 +44,7 @@ def calc_pv_feedin(gsee_timeseries_file,pv_config=PV_CONFIG_FILE):
 
 if __name__ == "__main__":
     for file in GSEE_TIMESERIES_DIR.iterdir():
-        if file.is_file() and "gsee_timeseries-try_mean_rcp85-2050" in file.name:
+        if file.is_file() and "gsee_timeseries" in file.name:
 
             pv_timeseries = calc_pv_feedin(file)
 
