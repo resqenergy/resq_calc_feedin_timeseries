@@ -1,4 +1,4 @@
-# resq_precalc_pv_timeseries
+# resq_calc_feedin_timeseries
 
 This repository contains scripts for precalculating PV feed-in time-series data.  
 Each PV system is defined by tilt and azimuth angles, and the script calculates
@@ -7,9 +7,6 @@ weighted sums per technology.
 ## Project Structure
 resq_precalc_pv_timeseries/
 
-├── scripts/
-
-│ └── calculate_weighted_pv_timeseries_from_config.py # Main script with docstrings
 
 ├── data/
 
@@ -27,6 +24,7 @@ resq_precalc_pv_timeseries/
 
 └── README.md
 
+│└── calc_pv_timeseries.py 
 
 
 ## Environment Setup
