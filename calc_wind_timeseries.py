@@ -124,6 +124,5 @@ if __name__ == "__main__":
         if file.is_file() and ".txt" in file.name and "try_mean_rcp85.p3" in file.name:
 
             weather_df=read_and_preprocess_weather_data(file, args)
-            print("Success")
 
 
