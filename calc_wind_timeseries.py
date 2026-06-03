@@ -188,5 +188,5 @@ if __name__ == "__main__":
             my_turbine = run_windpowerlib(turbine_model, modelchain_data, weather_windpowerlib)
 
             wind_timeseries=my_turbine.power_output #TODO: normalize to 1MW and validate
-            
+
 
