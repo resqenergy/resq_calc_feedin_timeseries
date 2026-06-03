@@ -8,14 +8,34 @@ DATA_DIR=Path(__file__).parent / "data"
 RESULTS_DIR=Path(__file__).parent / "results"
 WEATHER_DATA_DIR=DATA_DIR/ "10_Testreferenzjahre_TRY"
 WINDTUBRINE_FILE=DATA_DIR / "turbine-models-main"/ "turbine_models"/ "data"/ "Distributed"/ "Kestrele400nb_2.5kW_4.csv"
+TURBINE_MODELS_NREL=DATA_DIR / "turbine-models-main" / "turbine_models"/ "data"
 
 args = {
     "year": None,
     "periods":8760,
     "coords": (52.43, 13.54), # coords of pv plant (52.43, 13.54) => Adlershof (Berlin)
     "roughness_length": 0.6,  #Source: https://wind-data.ch/tools/profile.php?h=2&v=10&z0=0.6&abfrage=Aktualisieren
-    "weather_columns": [("pressure",0), ("temperature",2), ("wind_speed",10), ("roughness_length",0)] # (variable name, heights) source: heights taken from data/10_Testreferenzjahre_TRY/metadata_testreferenceyears.pdf
+    "weather_columns": [("pressure",0), ("temperature",2), ("wind_speed",10), ("roughness_length",0)], # (variable name, heights) source: heights taken from data/10_Testreferenzjahre_TRY/metadata_testreferenceyears.pdf
+    "wind_turbine_name": "2019COE_DW100_100kW_27.6", # assumption: Wind turbine class "Commercial", source: https://www.osti.gov/servlets/purl/2479271?utm_source=consensus and https://github.com/NREL/turbine-models
+    "wind_turbine_class": "Distributed",
+    "wind_turbine_hub_height": 40,
+    "wind_turbine_nominal_power":100000
 }
+
+modelchain_data = {
+    'wind_speed_model': 'logarithmic',  # 'logarithmic' (default),
+    # 'hellman' or
+    # 'interpolation_extrapolation'
+    'density_model': 'ideal_gas',  # 'barometric' (default), 'ideal_gas'
+    #  or 'interpolation_extrapolation'
+    'temperature_model': 'linear_gradient',  # 'linear_gradient' (def.) or
+    # 'interpolation_extrapolation'
+    'power_output_model':
+        'power_coefficient_curve',  # 'power_curve' (default) or
+    # 'power_coefficient_curve'
+    'density_correction': True,  # False (default) or True
+    'obstacle_height': 0,  # default: 0
+    'hellman_exp': None}  # None (default) or None
 
 def resolve_year(weatherdata_name, year=args["year"]):
     """Resolve the calendar year for a TRY weather data file.
@@ -119,12 +139,54 @@ def read_and_preprocess_weather_data(weatherdata_file, args=args):
     df.columns= pd.MultiIndex.from_tuples(args["weather_columns"], names=["variable_name","height"])
     return df
 
+def preprocess_nrel_turbine_model(nrel_turbine_model_path,args=args):
+    columns = ["Wind Speed [m/s]","Power [kW]"]
+    power_curve_df=pd.read_csv(nrel_turbine_model_path, usecols=columns)
+    power_curve_df.rename(columns={
+        "Wind Speed [m/s]": "wind_speed",
+        "Power [kW]": "value",
+        "Cp [-]":"cp"}, #TODO: check if cp is correct naming
+        inplace=True)
+
+
+    #convert power from kW to W
+    power_curve_df["value"]=power_curve_df["value"]*1000
+
+    turbine_model= {
+        'nominal_power': args["wind_turbine_nominal_power"],  # in W
+        'hub_height': args["wind_turbine_hub_height"],  # in m
+        'power_curve': power_curve_df
+    }
+    return turbine_model
+
+
+def run_windpowerlib(turbine_model, modelchain_data, weather_windpowerlib, args=args):
+    # specification of own wind turbine (Note: power curve values and
+    # nominal power have to be in Watt)
+
+    # initialize WindTurbine object
+    my_turbine = WindTurbine(**turbine_model)
+
+    # own specifications for ModelChain setup
+
+    mc_my_turbine = ModelChain(my_turbine).run_model(weather_windpowerlib)
+    # write power output time series to WindTurbine object
+    my_turbine.power_output = mc_my_turbine.power_output
+
+    return my_turbine
 
 
 if __name__ == "__main__":
     for file in WEATHER_DATA_DIR.iterdir():
         if file.is_file() and ".txt" in file.name and "try_mean_rcp85.p3" in file.name:
 
-            weather_df=read_and_preprocess_weather_data(file, args)
+            weather_windpowerlib=read_and_preprocess_weather_data(file, args)
 
+            turbine_model_path=TURBINE_MODELS_NREL/ args["wind_turbine_class"] /f"{args["wind_turbine_name"]}.csv"
+            turbine_model=preprocess_nrel_turbine_model(turbine_model_path)
+
+            my_turbine = run_windpowerlib(turbine_model, modelchain_data, weather_windpowerlib)
+
+            wind_timeseries=my_turbine.power_output #TODO: normalize to 1MW and validate
+            
 
