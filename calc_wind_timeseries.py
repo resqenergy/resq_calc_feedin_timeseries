@@ -10,7 +10,8 @@ WINDTUBRINE_FILE=DATA_DIR / "turbine-models-main"/ "turbine_models"/ "data"/ "Di
 args = {
     "year": None,
     "periods":8760,
-    "coords": (52.43, 13.54) # coords of pv plant (52.43, 13.54) => Adlershof (Berlin)
+    "coords": (52.43, 13.54), # coords of pv plant (52.43, 13.54) => Adlershof (Berlin)
+    "roughness_length": 0.6  #Source: https://wind-data.ch/tools/profile.php?h=2&v=10&z0=0.6&abfrage=Aktualisieren
 }
 
 def resolve_year(weatherdata_name, year=args["year"]):
@@ -52,26 +53,31 @@ def read_and_preprocess_weather_data(weatherdata_file, year, args= args):
     DATA_DIR/ "windpowerlib_weather.csv"
     Parameters:
         """
-
+    year= resolve_year(weatherdata_file.name, args["year"])
     columns=["pressure_surface","wind_speed","air_temperature_mean"]
 
-    df_weatherdata = pd.read_csv(weatherdata_file, sep=";", usecols=columns)
-    df_weatherdata.set_index(pd.date_range(start=f"1/1/{year}",periods=args["periods"], freq="h"), inplace=True)
+    df = pd.read_csv(weatherdata_file, sep=";", usecols=columns)
+    df.set_index(pd.date_range(start=f"1/1/{year}",periods=args["periods"], freq="h"), inplace=True)
 
-    df_weatherdata.rename(columns={
+    df.rename(columns={
         "pressure_surface":"pressure",
         "air_temperature_mean":"temperature"},
         inplace=True)
+    df["roughness_length"] = args["roughness_length"]
 
-    # placeholder for more preprocessing
+    # temperature in Kelvin
+    df["temperature"]=df["temperature"]+273.15
 
-    return df_weatherdata
+    df=df[["pressure","temperature", "wind_speed", "roughness_length"]]
+    df.columns= pd.MultiIndex.from_tuples([("pressure",0), ("temperature",2), ("wind_speed",10), ("roughness_length",0)], names=["variable_name","height"])
+
+    return df
+
 
 if __name__ == "__main__":
     for file in WEATHER_DATA_DIR.iterdir():
         if file.is_file() and ".txt" in file.name and "try_mean_rcp85.p3" in file.name:
 
-            year=resolve_year(file.name)
-            weather_df=read_and_preprocess_weather_data(file, year)
+            weather_df=read_and_preprocess_weather_data(file, args)
 
 
