@@ -11,7 +11,8 @@ args = {
     "year": None,
     "periods":8760,
     "coords": (52.43, 13.54), # coords of pv plant (52.43, 13.54) => Adlershof (Berlin)
-    "roughness_length": 0.6  #Source: https://wind-data.ch/tools/profile.php?h=2&v=10&z0=0.6&abfrage=Aktualisieren
+    "roughness_length": 0.6,  #Source: https://wind-data.ch/tools/profile.php?h=2&v=10&z0=0.6&abfrage=Aktualisieren
+    "weather_columns": [("pressure",0), ("temperature",2), ("wind_speed",10), ("roughness_length",0)] # (variable name, heights) source: heights taken from data/10_Testreferenzjahre_TRY/metadata_testreferenceyears.pdf
 }
 
 def resolve_year(weatherdata_name, year=args["year"]):
@@ -65,12 +66,11 @@ def read_and_preprocess_weather_data(weatherdata_file, year, args= args):
         inplace=True)
     df["roughness_length"] = args["roughness_length"]
 
-    # temperature in Kelvin
+    # transfer temperature from °C to Kelvin
     df["temperature"]=df["temperature"]+273.15
 
     df=df[["pressure","temperature", "wind_speed", "roughness_length"]]
-    df.columns= pd.MultiIndex.from_tuples([("pressure",0), ("temperature",2), ("wind_speed",10), ("roughness_length",0)], names=["variable_name","height"])
-
+    df.columns= pd.MultiIndex.from_tuples(args["weather_columns"], names=["variable_name","height"])
     return df
 
 
@@ -79,5 +79,6 @@ if __name__ == "__main__":
         if file.is_file() and ".txt" in file.name and "try_mean_rcp85.p3" in file.name:
 
             weather_df=read_and_preprocess_weather_data(file, args)
+            print("Success")
 
 
