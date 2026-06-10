@@ -3,6 +3,7 @@
 This repository contains scripts for precalculating feed-in time-series for pv and wind
 (solarthermal timeseries may be added later).
 
+
 ## Project Structure
 resq_precalc_pv_timeseries/
 
