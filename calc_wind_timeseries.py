@@ -137,7 +137,7 @@ def preprocess_nrel_turbine_model(nrel_turbine_model_path):
     power_curve_df = power_curve_df.rename(columns={
         "Wind Speed [m/s]": "wind_speed",
         "Power [kW]": "value",
-        "Cp [-]": "cp"})  # TODO: check if cp is correct naming
+        "Cp [-]": "cp"})  
 
     # convert power from kW to W
     power_curve_df["value"] = power_curve_df["value"] * 1000
