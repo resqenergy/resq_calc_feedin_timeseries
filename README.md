@@ -1,7 +1,8 @@
 # resq_calc_feedin_timeseries
 
-This repository contains scripts for precalculating feed-in time-series for pv 
-(wind and solarthermal timeseries may be added later).
+This repository contains scripts for precalculating feed-in time-series for pv and wind
+(solarthermal timeseries may be added later).
+
 
 ## Project Structure
 resq_precalc_pv_timeseries/
@@ -24,7 +25,7 @@ resq_precalc_pv_timeseries/
 └── README.md
 
 │└── calc_pv_timeseries.py 
-
+│└── calc_wind_timeseries.py 
 
 ## Environment Setup
 
